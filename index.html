@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/public/common/common.css">
     <link rel="stylesheet" href="/public/number-game/number-game.css">
     <link rel="stylesheet" href="/public/word-game/word-game.css">
+    <link rel="stylesheet" href="/public/common/chat.css">
     <!-- Socket.IO -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
@@ -187,28 +188,52 @@
         
         <!-- Phần chơi game tìm số -->
         <div id="game" class="section hidden">
-            <div id="game-info">
-                <div id="current-player"></div>
-                <div id="next-number"></div>
+            <div class="game-with-chat">
+                <div class="game-area">
+                    <div id="game-info">
+                        <div id="current-player"></div>
+                        <div id="next-number"></div>
+                    </div>
+                    <div id="score-board"></div>
+                    <div id="numbers-container"></div>
+                    <button id="end-game">Kết Thúc</button>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-header">Trò chuyện</div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Nhập tin nhắn...">
+                        <button id="chat-send">Gửi</button>
+                    </div>
+                </div>
             </div>
-            <div id="score-board"></div>
-            <div id="numbers-container"></div>
-            <button id="end-game">Kết Thúc</button>
         </div>
 
         <!-- Phần chơi game nối từ -->
         <div id="word-game" class="section hidden">
-            <div id="word-game-info">
-                <div id="word-current-player"></div>
-                <div id="word-timer">Thời gian: <span id="timer-countdown">30</span>s</div>
+            <div class="game-with-chat">
+                <div class="game-area">
+                    <div id="word-game-info">
+                        <div id="word-current-player"></div>
+                        <div id="word-timer">Thời gian: <span id="timer-countdown">30</span>s</div>
+                    </div>
+                    <div id="word-chain-display"></div>
+                    <div id="word-input-area" class="hidden">
+                        <input type="text" id="word-input" placeholder="Nhập từ của bạn...">
+                        <button id="word-submit-btn">Gửi</button>
+                    </div>
+                    <div id="word-score-board"></div>
+                    <div class="fee-notice">⚠️ Lưu ý: Người thua sẽ bị phạt 5.000đ cho mỗi ván thua ⚠️</div>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-header">Trò chuyện</div>
+                    <div class="chat-messages" id="word-chat-messages"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="word-chat-input" placeholder="Nhập tin nhắn...">
+                        <button id="word-chat-send">Gửi</button>
+                    </div>
+                </div>
             </div>
-            <div id="word-chain-display"></div>
-            <div id="word-input-area" class="hidden">
-                <input type="text" id="word-input" placeholder="Nhập từ của bạn...">
-                <button id="word-submit-btn">Gửi</button>
-            </div>
-            <div id="word-score-board"></div>
-            <div class="fee-notice">⚠️ Lưu ý: Người thua sẽ bị phạt 5.000đ cho mỗi ván thua ⚠️</div>
         </div>
         
         <!-- Phần kết quả game tìm số -->
@@ -253,5 +278,6 @@
     <script src="/public/common/common.js"></script>
     <script src="/public/number-game/number-game.js"></script>
     <script src="/public/word-game/word-game.js"></script>
+    <script src="/public/common/chat.js"></script>
 </body>
 </html> 

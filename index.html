@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Game Collection</title>
+    <!-- Các file CSS -->
+    <link rel="stylesheet" href="/public/common/common.css">
+    <link rel="stylesheet" href="/public/number-game/number-game.css">
+    <link rel="stylesheet" href="/public/word-game/word-game.css">
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Bộ Sưu Tập Game</h1>
+        
+        <!-- Màn hình chọn game -->
+        <div id="game-select" class="section">
+            <h2>Chọn Game</h2>
+            <div class="game-buttons">
+                <button id="number-game-btn" class="game-select-btn">
+                    <div class="game-icon">🔢</div>
+                    <div class="game-name">Trò Chơi Tìm Số</div>
+                </button>
+                <button id="word-chain-btn" class="game-select-btn">
+                    <div class="game-icon">🔤</div>
+                    <div class="game-name">Trò Chơi Nối Từ</div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Màn hình chính game tìm số-->
+        <div id="main-menu" class="section hidden">
+            <h2>Chọn chế độ chơi</h2>
+            <div class="menu-buttons">
+                <button id="local-game-btn">Chơi trên máy này</button>
+                <button id="create-online-btn">Tạo phòng online</button>
+                <button id="join-online-btn">Tham gia phòng online</button>
+            </div>
+            <button id="back-to-games" class="secondary-btn">Quay lại chọn game</button>
+        </div>
+        
+        <!-- Màn hình chính game nối từ -->
+        <div id="word-main-menu" class="section hidden">
+            <h2>Trò Chơi Nối Từ</h2>
+            <div class="menu-buttons">
+                <button id="word-create-online-btn">Tạo phòng online</button>
+                <button id="word-join-online-btn">Tham gia phòng online</button>
+            </div>
+            <button id="word-back-to-games" class="secondary-btn">Quay lại chọn game</button>
+        </div>
+        
+        <!-- Phần thiết lập trò chơi offline -->
+        <div id="setup" class="section hidden">
+            <h2>Thiết lập trò chơi</h2>
+            <div class="setup-option">
+                <label for="number-count">Số lượng số:</label>
+                <input type="number" id="number-count" min="10" max="300" value="100" step="10">
+            </div>
+            <div class="setup-option">
+                <label for="player-count">Số lượng người chơi:</label>
+                <select id="player-count">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <div id="players-container">
+                <div class="player-input">
+                    <label for="player1">Người chơi 1:</label>
+                    <input type="text" id="player1" placeholder="Nhập tên">
+                </div>
+                <div class="player-input">
+                    <label for="player2">Người chơi 2:</label>
+                    <input type="text" id="player2" placeholder="Nhập tên">
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="start-game">Bắt Đầu</button>
+                <button id="back-to-menu" class="secondary-btn">Quay lại</button>
+            </div>
+        </div>
+        
+        <!-- Phần tạo phòng online game tìm số -->
+        <div id="create-online" class="section hidden">
+            <h2>Tạo phòng online</h2>
+            <div class="setup-option">
+                <label for="creator-name">Tên của bạn:</label>
+                <input type="text" id="creator-name" placeholder="Nhập tên">
+            </div>
+            <div class="setup-option">
+                <label for="online-number-count">Số lượng số:</label>
+                <input type="number" id="online-number-count" min="10" max="300" value="100" step="10">
+            </div>
+            <div class="setup-option">
+                <label for="online-player-count">Số lượng người chơi:</label>
+                <select id="online-player-count">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button id="create-room-btn">Tạo phòng</button>
+                <button id="back-from-create" class="secondary-btn">Quay lại</button>
+            </div>
+        </div>
+
+        <!-- Phần tạo phòng online game nối từ -->
+        <div id="word-create-online" class="section hidden">
+            <h2>Tạo phòng nối từ online</h2>
+            <div class="setup-option">
+                <label for="word-creator-name">Tên của bạn:</label>
+                <input type="text" id="word-creator-name" placeholder="Nhập tên">
+            </div>
+            <div class="setup-info">
+                <p>Phòng sẽ được tạo không giới hạn số người tham gia.<br>Bắt đầu chơi khi có ít nhất 2 người.</p>
+            </div>
+            <div class="button-group">
+                <button id="word-create-room-btn">Tạo phòng</button>
+                <button id="word-back-from-create" class="secondary-btn">Quay lại</button>
+            </div>
+        </div>
+        
+        <!-- Phần tham gia phòng online game tìm số -->
+        <div id="join-online" class="section hidden">
+            <h2>Tham gia phòng online</h2>
+            <div class="setup-option">
+                <label for="joiner-name">Tên của bạn:</label>
+                <input type="text" id="joiner-name" placeholder="Nhập tên">
+            </div>
+            <div class="setup-option">
+                <label for="room-id">Mã phòng:</label>
+                <input type="text" id="room-id" placeholder="Nhập mã phòng">
+            </div>
+            <div class="button-group">
+                <button id="join-room-btn">Tham gia</button>
+                <button id="back-from-join" class="secondary-btn">Quay lại</button>
+            </div>
+        </div>
+
+        <!-- Phần tham gia phòng online game nối từ -->
+        <div id="word-join-online" class="section hidden">
+            <h2>Tham gia phòng nối từ</h2>
+            <div class="setup-option">
+                <label for="word-joiner-name">Tên của bạn:</label>
+                <input type="text" id="word-joiner-name" placeholder="Nhập tên">
+            </div>
+            <div class="setup-option">
+                <label for="word-room-id">Mã phòng:</label>
+                <input type="text" id="word-room-id" placeholder="Nhập mã phòng">
+            </div>
+            <div class="button-group">
+                <button id="word-join-room-btn">Tham gia</button>
+                <button id="word-back-from-join" class="secondary-btn">Quay lại</button>
+            </div>
+        </div>
+        
+        <!-- Phòng chờ online game tìm số -->
+        <div id="online-waiting" class="section hidden">
+            <h2>Phòng chờ</h2>
+            <div id="room-info">
+                <div id="room-id-display"></div>
+            </div>
+            <div class="waiting-message">Đang chờ người chơi tham gia...</div>
+            <div id="online-players-list"></div>
+            <div class="button-group">
+                <button id="start-online-game" class="hidden">Bắt đầu</button>
+                <button id="leave-room" class="secondary-btn">Rời phòng</button>
+            </div>
+        </div>
+
+        <!-- Phòng chờ online game nối từ -->
+        <div id="word-online-waiting" class="section hidden">
+            <h2>Phòng chờ nối từ</h2>
+            <div id="word-room-info">
+                <div id="word-room-id-display"></div>
+            </div>
+            <div class="waiting-message">Đang chờ người chơi tham gia...</div>
+            <div id="word-online-players-list"></div>
+            <div class="button-group">
+                <button id="word-start-online-game" class="hidden">Bắt đầu</button>
+                <button id="word-leave-room" class="secondary-btn">Rời phòng</button>
+            </div>
+        </div>
+        
+        <!-- Phần chơi game tìm số -->
+        <div id="game" class="section hidden">
+            <div id="game-info">
+                <div id="current-player"></div>
+                <div id="next-number"></div>
+            </div>
+            <div id="score-board"></div>
+            <div id="numbers-container"></div>
+            <button id="end-game">Kết Thúc</button>
+        </div>
+
+        <!-- Phần chơi game nối từ -->
+        <div id="word-game" class="section hidden">
+            <div id="word-game-info">
+                <div id="word-current-player"></div>
+                <div id="word-timer">Thời gian: <span id="timer-countdown">30</span>s</div>
+            </div>
+            <div id="word-chain-display"></div>
+            <div id="word-input-area" class="hidden">
+                <input type="text" id="word-input" placeholder="Nhập từ của bạn...">
+                <button id="word-submit-btn">Gửi</button>
+            </div>
+            <div id="word-score-board"></div>
+        </div>
+        
+        <!-- Phần kết quả game tìm số -->
+        <div id="results" class="section hidden">
+            <h2>Kết quả</h2>
+            <div id="winner"></div>
+            <div id="final-scores"></div>
+            <div class="button-group">
+                <button id="play-again">Chơi Lại</button>
+                <button id="back-to-menu-from-results" class="secondary-btn">Về Menu</button>
+            </div>
+        </div>
+
+        <!-- Phần kết quả game nối từ -->
+        <div id="word-results" class="section hidden">
+            <h2>Kết quả nối từ</h2>
+            <div id="word-loser"></div>
+            <div id="word-chain-result"></div>
+            <div class="button-group">
+                <button id="word-play-again">Chơi Lại</button>
+                <button id="word-back-to-menu-from-results" class="secondary-btn">Về Menu</button>
+            </div>
+        </div>
+        
+        <!-- Thông báo -->
+        <div id="notification" class="hidden">
+            <div id="notification-content"></div>
+        </div>
+        
+        <!-- Modal thông báo lượt chơi nối từ -->
+        <div id="turn-notification-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-icon">🎮</div>
+                <div class="modal-title">Lượt chơi mới!</div>
+                <div id="turn-notification-message" class="modal-message"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Các file JavaScript -->
+    <script src="/public/common/common.js"></script>
+    <script src="/public/number-game/number-game.js"></script>
+    <script src="/public/word-game/word-game.js"></script>
+</body>
+</html> 

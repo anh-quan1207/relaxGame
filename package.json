@@ -1,0 +1,20 @@
+{
+  "name": "game-tim-so",
+  "version": "1.0.0",
+  "description": "Trò chơi tìm số theo thứ tự tăng dần",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

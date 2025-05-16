@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# Log files
+*.log
+
+# Database files
+*.db
+
+# Docker Compose file
+docker-compose.yml
+
+# Các file tạm
+*.tmp 

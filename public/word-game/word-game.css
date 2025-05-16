@@ -706,4 +706,25 @@
     0% { opacity: 0.8; }
     50% { opacity: 1; }
     100% { opacity: 0.8; }
+}
+
+/* Thông báo phí phạt */
+.fee-notice {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 15px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #ffeeba;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0% { background-color: #fff3cd; }
+    50% { background-color: #ffe7a0; }
+    100% { background-color: #fff3cd; }
 } 

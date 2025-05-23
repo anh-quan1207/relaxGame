@@ -696,6 +696,7 @@ function handleWordReported(data) {
     
     modal.innerHTML = `
         <div class="report-modal-content">
+            <button class="report-modal-close">×</button>
             <h3>Từ không hợp lệ!</h3>
             <p>Từ "<strong>${data.word}</strong>" của <strong>${data.playerName}</strong> đã bị báo cáo.</p>
             <p>${data.reporters}/${data.totalVoters} người chơi đồng ý báo cáo.</p>
@@ -710,13 +711,30 @@ function handleWordReported(data) {
         modal.classList.add('show');
     }, 10);
     
-    // Tự động xóa modal sau khi hiển thị xong
+    // Xử lý sự kiện đóng modal khi nhấn nút đóng
+    const closeButton = modal.querySelector('.report-modal-close');
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+            }, 300);
+        });
+    }
+    
+    // Tự động xóa modal sau khi hiển thị xong (nhưng giữ lại cho người dùng có thể tắt bằng tay)
     setTimeout(() => {
-        modal.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(modal);
-        }, 300);
-    }, 3000);
+        if (document.body.contains(modal)) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+            }, 300);
+        }
+    }, 10000);
 }
 
 // Khởi tạo giao diện game nối từ
@@ -780,6 +798,7 @@ function handleReportVoteRequest(data) {
     
     voteModal.innerHTML = `
         <div class="vote-modal-content">
+            <button class="report-modal-close" data-report-key="${reportKey}">×</button>
             <h3>Báo cáo từ</h3>
             <p>Từ "<strong>${word}</strong>" của <strong>${playerName}</strong> đã bị báo cáo không hợp lệ.</p>
             <p>Bạn có đồng ý với báo cáo này không?</p>
@@ -806,6 +825,7 @@ function handleReportVoteRequest(data) {
     // Đăng ký sự kiện cho các nút vote
     const yesButton = voteModal.querySelector('.vote-yes');
     const noButton = voteModal.querySelector('.vote-no');
+    const closeButton = voteModal.querySelector('.report-modal-close');
     
     if (yesButton) {
         yesButton.addEventListener('click', function() {
@@ -818,6 +838,17 @@ function handleReportVoteRequest(data) {
         noButton.addEventListener('click', function() {
             sendReportVote(reportKey, false);
             disableVoteButtons(voteModal);
+        });
+    }
+    
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            voteModal.classList.remove('show');
+            setTimeout(() => {
+                if (document.body.contains(voteModal)) {
+                    document.body.removeChild(voteModal);
+                }
+            }, 300);
         });
     }
 }

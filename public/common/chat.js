@@ -2,19 +2,18 @@
  * Chat Module - Xử lý chức năng chat trong game
  */
 
-// Biến để lưu trữ thông tin người dùng và socket
+// Các biến chung cho tính năng chat
+// Sử dụng prefix chat_ để tránh xung đột với các biến khác
 let chatSocket;
-let chatPlayerName = '';
-let chatPlayerId = '';
-let chatGameId = '';
-let currentRoomState = '';
-let DEBUG_CHAT = true; // Biến debug cho chat
-
-// Phân loại phòng
-const ROOM_STATE = {
+let chatGameId;
+let chatPlayerId;
+let chatPlayerName;
+const CHAT_ROOM_STATE = {
     WAITING: 'waiting',
     PLAYING: 'playing'
 };
+let chatRoomState = '';
+let DEBUG_CHAT = true; // Biến debug cho chat
 
 /**
  * Khởi tạo module chat
@@ -184,7 +183,7 @@ function setupChatSocketEvents() {
         
         // Thêm các tin nhắn từ lịch sử
         data.messages.forEach(msg => {
-            const containerToUse = (msg.roomState === ROOM_STATE.WAITING) ? 
+            const containerToUse = (msg.roomState === CHAT_ROOM_STATE.WAITING) ? 
                 waitingMessages : gameMessages;
             
             if (containerToUse) {
@@ -223,7 +222,7 @@ function setupChatSocketEvents() {
         if (DEBUG_CHAT) console.log("Nhận tin nhắn word-chat-message:", data);
         
         // Xác định container tin nhắn phù hợp dựa trên trạng thái phòng
-        const messagesId = (data.roomState === ROOM_STATE.WAITING) ? 
+        const messagesId = (data.roomState === CHAT_ROOM_STATE.WAITING) ? 
             'word-waiting-chat-messages' : 'word-chat-messages';
         
         const messagesContainer = document.getElementById(messagesId);
@@ -302,12 +301,12 @@ function setupChatSocketEvents() {
     
     // Lắng nghe sự kiện game bắt đầu để cập nhật trạng thái phòng
     chatSocket.on('word-game-started', function(data) {
-        currentRoomState = ROOM_STATE.PLAYING;
+        chatRoomState = CHAT_ROOM_STATE.PLAYING;
     });
     
     // Lắng nghe sự kiện game kết thúc để cập nhật trạng thái phòng
     chatSocket.on('word-game-over', function(data) {
-        currentRoomState = ROOM_STATE.WAITING;
+        chatRoomState = CHAT_ROOM_STATE.WAITING;
     });
 }
 

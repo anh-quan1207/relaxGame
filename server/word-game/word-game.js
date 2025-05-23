@@ -40,7 +40,8 @@ function initWordGameHandlers(io, socket) {
             remainingPlayers: [], // Mảng lưu ID người chơi chưa được chọn trong vòng hiện tại
             reports: {}, // Đối tượng lưu các báo cáo
             chatMessages: [], // Lưu trữ tin nhắn chat trong phòng
-            state: ROOM_STATE.WAITING // Trạng thái phòng mặc định là đang chờ
+            state: ROOM_STATE.WAITING, // Trạng thái phòng mặc định là đang chờ
+            turnTime: 30 // Thêm thời gian cho lượt chơi
         };
 
         // Thêm người chơi vào phòng socket
@@ -412,9 +413,12 @@ function initWordGameHandlers(io, socket) {
             
             // Chờ một chút để mọi người đọc thông báo
             setTimeout(() => {
-                // Kết thúc game với người thua là người nhập từ
-                endWordGame(gameId, report.playerName, io);
-            }, 2000);
+                // Đảm bảo phòng vẫn tồn tại trước khi kết thúc game
+                if (wordGames[gameId]) {
+                    // Kết thúc game với người thua là người nhập từ
+                    endWordGame(gameId, report.playerName, io);
+                }
+            }, 5000); // Tăng thời gian đợi lên 5 giây
         }
         
         // Kiểm tra nếu tất cả người chơi đã bỏ phiếu (trừ người bị báo cáo)
@@ -572,27 +576,33 @@ function startWordTimer(gameId, io) {
  */
 function endWordGame(gameId, loserName, io) {
     const game = wordGames[gameId];
-    if (!game) return;
-    
-    // Thông báo kết thúc game cho tất cả người chơi
+    if (!game) {
+        console.error(`Không tìm thấy phòng ${gameId} để kết thúc game.`);
+        return;
+    }
+
+    // Gửi thông báo kết thúc game
     io.to(gameId).emit('word-game-over', {
-        loserName: loserName || 'unknown',
+        loserName: loserName,
         wordChain: game.wordChain
     });
-    
-    // Đặt trạng thái game về chưa bắt đầu và phòng về trạng thái chờ
+
+    console.log(`Game nối từ ${gameId} kết thúc. Người thua: ${loserName}`);
+
+    // Đặt lại trạng thái phòng để chuẩn bị cho ván mới
     game.gameStarted = false;
-    game.state = ROOM_STATE.WAITING;
     game.wordChain = [];
     game.currentPlayerIndex = 0;
-    game.remainingPlayers = [];
+    game.turnTime = 30;
     game.reports = {};
     
-    // Xóa timer nếu có
-    if (game.timer) {
-        clearTimeout(game.timer);
-        game.timer = null;
-    }
+    // Đặt lại trạng thái ready cho tất cả người chơi
+    game.players.forEach(player => {
+        player.ready = false;
+    });
+    
+    // KHÔNG xóa phòng ở đây, chỉ reset trạng thái
+    // Phòng sẽ tiếp tục tồn tại để người chơi có thể chơi ván mới
 }
 
 module.exports = {

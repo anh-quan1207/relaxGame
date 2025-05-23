@@ -43,11 +43,15 @@ const onlinePlayersList = document.getElementById('online-players-list');
 const startOnlineGameButton = document.getElementById('start-online-game');
 const leaveRoomButton = document.getElementById('leave-room');
 
-// Biến game offline
-let players = [];
-let currentPlayerIndex = 0;
-let nextNumber = 1;
-let maxNumber;
+// Biến game tìm số
+// Thêm tiền tố numberGame cho các biến để tránh xung đột
+let numberGameCurrentNumber = 1;
+let numberGameNextNumber = 1;
+let numberGameCurrentPlayerIndex = 0;
+let numberGamePlayers = [];
+let numberGameIsStarted = false;
+let numberGameMode = 'local'; // local hoặc online
+let numberGameCountInGame = 100; // Số lượng số mặc định
 let gameOver = false;
 let isOnlineMode = false;
 
@@ -339,9 +343,9 @@ function handleGameStarted(data) {
     hideSection(onlineWaitingSection);
     
     // Cập nhật thông tin trò chơi
-    players = data.gameInfo.players;
-    nextNumber = data.gameInfo.nextNumber;
-    maxNumber = data.gameInfo.maxNumber;
+    numberGamePlayers = data.gameInfo.players;
+    numberGameNextNumber = data.gameInfo.nextNumber;
+    numberGameCountInGame = data.gameInfo.maxNumber;
     
     // Cập nhật bảng điểm
     updateScoreBoard();
@@ -518,10 +522,10 @@ function handleNumberSelected(data) {
     }
     
     // Cập nhật điểm
-    players = data.players;
+    numberGamePlayers = data.players;
     
     // Cập nhật số tiếp theo cần tìm
-    nextNumber = data.nextNumber;
+    numberGameNextNumber = data.nextNumber;
     
     // Cập nhật bảng điểm
     updateScoreBoard();
@@ -530,7 +534,7 @@ function handleNumberSelected(data) {
     updateGameInfo();
     
     // Hiển thị thông báo về người tìm thấy số
-    const playerName = players.find(p => p.id === data.playerId)?.name || 'Người chơi khác';
+    const playerName = numberGamePlayers.find(p => p.id === data.playerId)?.name || 'Người chơi khác';
     showNotification(`${playerName} đã tìm thấy số ${data.number}!`);
 }
 
@@ -545,9 +549,9 @@ function handleWrongNumber(data) {
  * Xử lý khi người chơi rời phòng
  */
 function handlePlayerLeft(data) {
-    players = data.players;
+    numberGamePlayers = data.players;
     
-    updatePlayersList({ players });
+    updatePlayersList({ players: numberGamePlayers });
     
     if (isOnlineMode) {
         updateScoreBoard();
@@ -619,7 +623,7 @@ function startGame() {
     isOnlineMode = false;
     
     // Thu thập thông tin người chơi
-    players = [];
+    numberGamePlayers = [];
     const playerInputs = playersContainer.querySelectorAll('input');
     let hasEmptyName = false;
     
@@ -629,7 +633,7 @@ function startGame() {
             hasEmptyName = true;
             input.style.borderColor = 'red';
         } else {
-            players.push({
+            numberGamePlayers.push({
                 id: `local-${index}`,
                 name: name,
                 score: 0
@@ -643,19 +647,19 @@ function startGame() {
     }
     
     // Thiết lập trò chơi
-    maxNumber = parseInt(numberCountSelect.value);
+    numberGameCountInGame = parseInt(numberCountSelect.value);
     
     // Kiểm tra giới hạn số lượng số
-    if (maxNumber > 300) {
-        maxNumber = 300;
+    if (numberGameCountInGame > 300) {
+        numberGameCountInGame = 300;
         showNotification('Số lượng số được giới hạn tối đa 300', true);
-    } else if (maxNumber < 10) {
-        maxNumber = 10;
+    } else if (numberGameCountInGame < 10) {
+        numberGameCountInGame = 10;
         showNotification('Số lượng số tối thiểu là 10', true);
     }
     
-    currentPlayerIndex = 0;
-    nextNumber = 1;
+    numberGameCurrentPlayerIndex = 0;
+    numberGameNextNumber = 1;
     gameOver = false;
     
     // Hiển thị trò chơi
@@ -685,7 +689,7 @@ function createNumberBoxes() {
         const containerHeight = numbersContainer.clientHeight || window.innerHeight * 0.6;
         
         // Tạo mảng các số từ 1 đến maxNumber
-        const numbers = Array.from({ length: maxNumber }, (_, i) => i + 1);
+        const numbers = Array.from({ length: numberGameCountInGame }, (_, i) => i + 1);
         
         // Xáo trộn mảng
         shuffleArray(numbers);
@@ -696,20 +700,20 @@ function createNumberBoxes() {
         
         // Tính toán dựa trên số lượng phần tử để đảm bảo tất cả vừa vặn trong container
         const containerArea = containerWidth * containerHeight;
-        const areaPerNumber = containerArea / maxNumber;
+        const areaPerNumber = containerArea / numberGameCountInGame;
         const idealSize = Math.sqrt(areaPerNumber * 0.7); // Để lại 30% cho khoảng cách
         
-        if (maxNumber <= 50) {
+        if (numberGameCountInGame <= 50) {
             boxWidth = 60;
             boxHeight = 60;
             horizontalGap = 20;
             verticalGap = 20;
-        } else if (maxNumber <= 100) {
+        } else if (numberGameCountInGame <= 100) {
             boxWidth = 50;
             boxHeight = 50;
             horizontalGap = 15;
             verticalGap = 15;
-        } else if (maxNumber <= 200) {
+        } else if (numberGameCountInGame <= 200) {
             boxWidth = 40;
             boxHeight = 40;
             horizontalGap = 10;
@@ -729,7 +733,7 @@ function createNumberBoxes() {
         const numCols = Math.floor((containerWidth - horizontalGap) / (boxWidth + horizontalGap));
         
         // Số dòng cần thiết
-        const numRows = Math.ceil(maxNumber / numCols);
+        const numRows = Math.ceil(numberGameCountInGame / numCols);
         
         // Đảm bảo tất cả các số vừa vặn trong container, nếu không, điều chỉnh kích thước
         if (numRows * (boxHeight + verticalGap) > containerHeight - verticalGap * 2) {
@@ -765,9 +769,9 @@ function createNumberBoxes() {
             numberBox.style.width = `${boxWidth}px`;
             numberBox.style.height = `${boxHeight}px`;
             numberBox.style.fontSize = `${
-                maxNumber <= 50 ? 20 : 
-                maxNumber <= 100 ? 18 : 
-                maxNumber <= 200 ? 15 : 13}px`;
+                numberGameCountInGame <= 50 ? 20 : 
+                numberGameCountInGame <= 100 ? 18 : 
+                numberGameCountInGame <= 200 ? 15 : 13}px`;
             
             // Thêm màu sắc ngẫu nhiên
             const hue = Math.floor(Math.random() * 360);
@@ -796,7 +800,7 @@ function handleNumberClick(box, number) {
     const num = parseInt(number);
     
     // Kiểm tra xem số có phải là số tiếp theo cần tìm không
-    if (num === nextNumber) {
+    if (num === numberGameNextNumber) {
         // Thêm hiệu ứng animation khi tìm thấy số đúng
         box.style.transform = 'scale(1.5) rotate(360deg)';
         box.style.transition = 'all 0.5s';
@@ -810,13 +814,13 @@ function handleNumberClick(box, number) {
             box.style.opacity = '0';
             
             // Cập nhật điểm cho người chơi hiện tại
-            players[currentPlayerIndex].score++;
+            numberGamePlayers[numberGameCurrentPlayerIndex].score++;
             
             // Cập nhật số tiếp theo cần tìm
-            nextNumber++;
+            numberGameNextNumber++;
             
             // Kiểm tra kết thúc trò chơi
-            if (nextNumber > maxNumber) {
+            if (numberGameNextNumber > numberGameCountInGame) {
                 endGame();
                 return;
             }
@@ -852,7 +856,7 @@ function handleNumberClick(box, number) {
  * Chuyển lượt sang người chơi tiếp theo
  */
 function moveToNextPlayer() {
-    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    numberGameCurrentPlayerIndex = (numberGameCurrentPlayerIndex + 1) % numberGamePlayers.length;
 }
 
 /**
@@ -864,9 +868,9 @@ function updateGameInfo() {
         currentPlayerDisplay.textContent = `Mọi người cùng tìm số!`;
     } else {
         // Trong chế độ offline, vẫn hiển thị lượt người chơi
-        currentPlayerDisplay.textContent = `Lượt của: ${players[currentPlayerIndex].name}`;
+        currentPlayerDisplay.textContent = `Lượt của: ${numberGamePlayers[numberGameCurrentPlayerIndex].name}`;
     }
-    nextNumberDisplay.textContent = `Tìm số: ${nextNumber}`;
+    nextNumberDisplay.textContent = `Tìm số: ${numberGameNextNumber}`;
 }
 
 /**
@@ -875,12 +879,12 @@ function updateGameInfo() {
 function updateScoreBoard() {
     scoreBoard.innerHTML = '';
     
-    players.forEach((player, index) => {
+    numberGamePlayers.forEach((player, index) => {
         const playerScore = document.createElement('div');
         playerScore.className = 'player-score';
         
         // Trong chế độ online, không đánh dấu người chơi hiện tại
-        if (!isOnlineMode && index === currentPlayerIndex) {
+        if (!isOnlineMode && index === numberGameCurrentPlayerIndex) {
             playerScore.classList.add('active');
         }
         
@@ -915,7 +919,7 @@ function endGame() {
     let maxScore = -1;
     let winners = [];
     
-    players.forEach(player => {
+    numberGamePlayers.forEach(player => {
         if (player.score > maxScore) {
             maxScore = player.score;
             winners = [player];
@@ -935,7 +939,7 @@ function endGame() {
     // Hiển thị điểm số cuối cùng
     finalScoresDisplay.innerHTML = '';
     
-    players.forEach(player => {
+    numberGamePlayers.forEach(player => {
         const playerFinalScore = document.createElement('div');
         playerFinalScore.className = 'player-final-score';
         playerFinalScore.textContent = `${player.name}: ${player.score} điểm`;

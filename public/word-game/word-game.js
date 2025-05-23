@@ -427,27 +427,28 @@ function updateWordPlayersList(data) {
     if (isHost && players.length >= 2) {
         wordStartOnlineGameButton.classList.remove('hidden');
         
-        // Thêm thông báo số người chơi hiện tại
-        const playersCountInfo = document.createElement('div');
-        playersCountInfo.className = 'players-count-info';
-        playersCountInfo.textContent = `Số người chơi hiện tại: ${players.length}`;
+        // Thêm hoặc cập nhật thông báo số người chơi
+        let playersCountInfo = document.querySelector('.players-count-info');
         
-        // Thêm vào trước hoặc sau danh sách người chơi
-        const existingInfo = document.querySelector('.players-count-info');
-        if (existingInfo) {
-            existingInfo.textContent = `Số người chơi hiện tại: ${players.length}`;
-        } else {
-            // Sửa lỗi: Thêm trực tiếp vào wordOnlineWaitingSection thay vì dùng nextElementSibling
-            if (wordStartOnlineGameButton && wordStartOnlineGameButton.parentNode === wordOnlineWaitingSection) {
-                // Thêm vào trước nút bắt đầu
-                wordOnlineWaitingSection.insertBefore(playersCountInfo, wordStartOnlineGameButton);
-            } else {
-                // Thêm vào cuối nếu không tìm thấy nút bắt đầu
-                wordOnlineWaitingSection.appendChild(playersCountInfo);
-            }
+        if (!playersCountInfo) {
+            // Tạo mới nếu chưa tồn tại
+            playersCountInfo = document.createElement('div');
+            playersCountInfo.className = 'players-count-info';
+            
+            // Thêm vào cuối section một cách an toàn
+            wordOnlineWaitingSection.appendChild(playersCountInfo);
         }
+        
+        // Cập nhật nội dung
+        playersCountInfo.textContent = `Số người chơi hiện tại: ${players.length}`;
     } else {
         wordStartOnlineGameButton.classList.add('hidden');
+        
+        // Xóa thông báo số người chơi nếu có
+        const existingInfo = document.querySelector('.players-count-info');
+        if (existingInfo && existingInfo.parentNode) {
+            existingInfo.parentNode.removeChild(existingInfo);
+        }
     }
 }
 

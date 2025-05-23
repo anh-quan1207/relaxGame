@@ -866,7 +866,7 @@ function sendReportVote(reportKey, vote) {
 
 // Vô hiệu hóa các nút vote sau khi đã vote
 function disableVoteButtons(voteModal) {
-    const buttons = voteModal.querySelectorAll('button');
+    const buttons = voteModal.querySelectorAll('.vote-buttons button');
     buttons.forEach(button => {
         button.disabled = true;
         button.classList.add('voted');
@@ -881,6 +881,36 @@ function disableVoteButtons(voteModal) {
     if (voteButtons) {
         voteButtons.appendChild(voteInfo);
     }
+    
+    // Thêm nút đóng sau khi bỏ phiếu
+    const closeButton = document.createElement('button');
+    closeButton.className = 'close-vote-modal';
+    closeButton.textContent = 'Đóng';
+    closeButton.addEventListener('click', function() {
+        voteModal.classList.remove('show');
+        setTimeout(() => {
+            if (document.body.contains(voteModal)) {
+                document.body.removeChild(voteModal);
+            }
+        }, 300);
+    });
+    
+    // Thêm nút đóng vào voteButtons
+    if (voteButtons) {
+        voteButtons.appendChild(closeButton);
+    }
+    
+    // Tự động đóng modal sau 5 giây
+    setTimeout(() => {
+        if (document.body.contains(voteModal)) {
+            voteModal.classList.remove('show');
+            setTimeout(() => {
+                if (document.body.contains(voteModal)) {
+                    document.body.removeChild(voteModal);
+                }
+            }, 300);
+        }
+    }, 5000);
 }
 
 // Xử lý cập nhật số phiếu vote
@@ -902,6 +932,34 @@ function handleReportVoteUpdate(data) {
         // Cập nhật màu sắc dựa trên tiến trình
         if (percentage >= 100) {
             voteFill.classList.add('complete');
+            
+            // Thông báo đã đạt đủ số phiếu
+            const completeInfo = document.createElement('div');
+            completeInfo.className = 'vote-complete-info';
+            completeInfo.textContent = 'Đã đạt đủ số phiếu! Báo cáo sẽ được xử lý...';
+            completeInfo.style.color = '#2ecc71';
+            completeInfo.style.fontWeight = 'bold';
+            completeInfo.style.marginTop = '10px';
+            
+            // Thêm thông báo vào modal nếu chưa có
+            if (!voteModal.querySelector('.vote-complete-info')) {
+                const modalContent = voteModal.querySelector('.vote-modal-content');
+                if (modalContent) {
+                    modalContent.appendChild(completeInfo);
+                }
+                
+                // Tự động đóng modal sau 3 giây khi đạt đủ số phiếu
+                setTimeout(() => {
+                    if (document.body.contains(voteModal)) {
+                        voteModal.classList.remove('show');
+                        setTimeout(() => {
+                            if (document.body.contains(voteModal)) {
+                                document.body.removeChild(voteModal);
+                            }
+                        }, 300);
+                    }
+                }, 3000);
+            }
         } else if (percentage >= 50) {
             voteFill.classList.add('halfway');
         }

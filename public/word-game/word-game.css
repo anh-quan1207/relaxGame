@@ -442,6 +442,16 @@
 .close-vote-modal {
     background-color: #3498db;
     color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .close-vote-modal:hover {
@@ -459,6 +469,23 @@
     margin-top: 10px;
     font-style: italic;
     text-align: center;
+    margin-bottom: 10px;
+}
+
+.vote-complete-info {
+    background-color: #e8f8f5;
+    border: 1px solid #2ecc71;
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 10px;
+    text-align: center;
+    animation: pulse-success 2s infinite;
+}
+
+@keyframes pulse-success {
+    0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
 }
 
 .vote-progress {

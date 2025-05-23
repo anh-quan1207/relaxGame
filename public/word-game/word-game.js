@@ -436,10 +436,15 @@ function updateWordPlayersList(data) {
         const existingInfo = document.querySelector('.players-count-info');
         if (existingInfo) {
             existingInfo.textContent = `Số người chơi hiện tại: ${players.length}`;
-        } else if (wordOnlinePlayersList.nextElementSibling) {
-            wordOnlineWaitingSection.insertBefore(playersCountInfo, wordOnlinePlayersList.nextElementSibling);
         } else {
-            wordOnlineWaitingSection.appendChild(playersCountInfo);
+            // Sửa lỗi: Thêm trực tiếp vào wordOnlineWaitingSection thay vì dùng nextElementSibling
+            if (wordStartOnlineGameButton && wordStartOnlineGameButton.parentNode === wordOnlineWaitingSection) {
+                // Thêm vào trước nút bắt đầu
+                wordOnlineWaitingSection.insertBefore(playersCountInfo, wordStartOnlineGameButton);
+            } else {
+                // Thêm vào cuối nếu không tìm thấy nút bắt đầu
+                wordOnlineWaitingSection.appendChild(playersCountInfo);
+            }
         }
     } else {
         wordStartOnlineGameButton.classList.add('hidden');

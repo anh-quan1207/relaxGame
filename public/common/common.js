@@ -27,6 +27,20 @@ let socket = null;
 let gameId = null;
 let isHost = false;
 let myPlayerId = null;
+let players = [];
+let isOnlineMode = false;
+
+// DEBUG - Log các biến global
+function logGlobalVars() {
+    console.log("DEBUG: Biến global:", {
+        gameId,
+        myPlayerId,
+        players,
+        isHost,
+        isOnlineMode,
+        gameType
+    });
+}
 
 /**
  * Khởi tạo các event listener chung
@@ -59,71 +73,43 @@ function initCommonEvents() {
 }
 
 /**
- * Khởi tạo kết nối socket
+ * Khởi tạo socket.io nếu chưa có
  */
 function initializeSocket() {
     if (!socket) {
-        console.log('Khởi tạo kết nối socket.io...');
-        
-        // Kiểm tra xem io có tồn tại không (từ socket.io)
-        if (typeof io === 'undefined') {
-            console.warn('Socket.IO chưa được tải, đang thử tải lại...');
+        console.log("Đang khởi tạo socket mới...");
+        try {
+            socket = io();
+            isOnlineMode = true;
             
-            // Thử tải thư viện Socket.IO theo cách thủ công
-            const script = document.createElement('script');
-            script.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
-            script.async = true;
-            script.onload = function() {
-                console.log('Socket.IO đã được tải thành công, đang kết nối...');
-                // Sau khi tải, thử kết nối lại
-                initializeSocketConnection();
-            };
-            script.onerror = function() {
-                console.error('Không thể tải thư viện Socket.IO.');
-                showNotification('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại!', true);
-            };
-            document.head.appendChild(script);
+            // Lắng nghe các sự kiện chung
+            socket.on('connect', () => {
+                console.log('Socket đã kết nối: ' + socket.id);
+                logGlobalVars();
+            });
+            
+            socket.on('error', (data) => {
+                console.error('Socket error:', data);
+                showNotification('Có lỗi xảy ra: ' + data.message, true);
+            });
+            
+            socket.on('connect_error', (error) => {
+                console.error('Socket connect error:', error);
+                showNotification('Không thể kết nối đến máy chủ. Vui lòng thử lại!', true);
+            });
+            
+            // Thông báo cho các thành phần khác biết socket đã được khởi tạo
+            const event = new Event('socketInitialized');
+            document.dispatchEvent(event);
+            
+            console.log("Socket đã được khởi tạo thành công: ", socket.id);
+            return socket;
+        } catch (error) {
+            console.error("Lỗi khi khởi tạo socket:", error);
             return null;
         }
-        
-        return initializeSocketConnection();
     }
     return socket;
-}
-
-/**
- * Khởi tạo kết nối socket sau khi thư viện đã tải
- */
-function initializeSocketConnection() {
-    try {
-        socket = io();
-        
-        // Lắng nghe các sự kiện chung
-        socket.on('connect', () => {
-            console.log('Socket đã kết nối: ' + socket.id);
-        });
-        
-        socket.on('error', (data) => {
-            console.error('Socket error:', data);
-            handleError(data);
-        });
-        
-        socket.on('connect_error', (error) => {
-            console.error('Socket connect error:', error);
-            showNotification('Không thể kết nối đến máy chủ. Vui lòng thử lại!', true);
-        });
-        
-        // Phát sự kiện thông báo socket đã được khởi tạo
-        console.log('Đang phát sự kiện socketInitialized');
-        const socketEvent = new Event('socketInitialized');
-        document.dispatchEvent(socketEvent);
-        
-        return socket;
-    } catch (error) {
-        console.error('Lỗi khi khởi tạo socket:', error);
-        showNotification('Có lỗi xảy ra khi kết nối đến máy chủ. Vui lòng thử lại!', true);
-        return null;
-    }
 }
 
 /**
@@ -185,6 +171,34 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+}
+
+/**
+ * Đặt gameId và thông báo thay đổi
+ */
+function setGameId(newGameId) {
+    gameId = newGameId;
+    console.log("GameId đã được đặt: " + gameId);
+    
+    // Phát sự kiện thông báo gameId đã thay đổi
+    const event = new CustomEvent('gameIdChanged', { 
+        detail: { gameId: newGameId }
+    });
+    document.dispatchEvent(event);
+}
+
+/**
+ * Đặt playerId và thông báo thay đổi
+ */
+function setPlayerId(newPlayerId) {
+    myPlayerId = newPlayerId;
+    console.log("PlayerId đã được đặt: " + myPlayerId);
+    
+    // Phát sự kiện thông báo playerId đã thay đổi
+    const event = new CustomEvent('playerIdChanged', { 
+        detail: { playerId: newPlayerId }
+    });
+    document.dispatchEvent(event);
 }
 
 // Khởi tạo sự kiện khi trang load

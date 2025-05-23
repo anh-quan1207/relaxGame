@@ -3,38 +3,56 @@
 /* Layout cho game + chat */
 .game-with-chat {
     display: flex;
-    gap: 20px;
+    flex-direction: column;
     width: 100%;
 }
 
 .game-area {
-    flex: 1;
-    min-width: 0; /* Đảm bảo flexbox không làm tràn nội dung */
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Layout cho phòng chờ + chat */
+.waiting-room-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.waiting-room-info {
+    width: 100%;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
 /* Khung chat */
 .chat-container {
-    width: 300px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     border: 1px solid #ddd;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #fff;
-    height: 500px;
+    height: 250px;
     transition: all 0.3s ease;
+    margin-top: 20px;
 }
 
 /* Tiêu đề chat */
 .chat-header {
     background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
-    padding: 12px;
+    padding: 8px 12px;
     font-weight: bold;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
 }
 
 /* Khu vực hiển thị tin nhắn */
@@ -98,7 +116,7 @@
 /* Khu vực nhập và gửi tin nhắn */
 .chat-input-area {
     display: flex;
-    padding: 10px;
+    padding: 8px;
     border-top: 1px solid #eee;
     background-color: white;
     border-bottom-left-radius: 10px;
@@ -108,7 +126,7 @@
 /* Input nhập tin nhắn */
 .chat-input-area input {
     flex: 1;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #ddd;
     border-radius: 20px;
     font-size: 14px;
@@ -123,13 +141,14 @@
 /* Nút gửi tin nhắn */
 .chat-input-area button {
     margin-left: 8px;
-    padding: 8px 15px;
+    padding: 6px 12px;
     background-color: #3498db;
     color: white;
     border: none;
     border-radius: 20px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    font-size: 14px;
 }
 
 .chat-input-area button:hover {
@@ -139,8 +158,8 @@
 /* Thông báo hệ thống */
 .system-message {
     text-align: center;
-    padding: 5px 10px;
-    margin: 5px 0;
+    padding: 4px 8px;
+    margin: 4px 0;
     color: #666;
     font-size: 0.85em;
     font-style: italic;
@@ -152,15 +171,74 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+/* Styles cho danh sách người chơi trong phòng chờ */
+#word-online-players-list, #online-players-list {
+    margin: 15px 0;
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.player-item {
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+}
+
+.player-item:last-child {
+    margin-bottom: 0;
+}
+
+.host-label {
+    background-color: #e74c3c;
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-right: 8px;
+}
+
+/* Mã phòng */
+#word-room-id-display, #room-id-display {
+    font-size: 1.2em;
+    background-color: #3498db;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+/* Responsive - Nếu màn hình lớn hơn, đặt chat bên cạnh */
+@media (min-width: 1200px) {
     .game-with-chat {
-        flex-direction: column;
+        flex-direction: row;
+        gap: 20px;
     }
     
     .chat-container {
-        width: 100%;
-        margin-top: 20px;
-        height: 300px;
+        width: 300px;
+        height: 500px;
+        margin-top: 0;
+        flex-shrink: 0;
+    }
+    
+    .game-area {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .waiting-room-container {
+        flex-direction: row;
+        gap: 20px;
+    }
+    
+    .waiting-room-info {
+        flex: 1;
+        margin-bottom: 0;
     }
 } 

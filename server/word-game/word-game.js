@@ -7,6 +7,12 @@ const { generateGameId } = require('../common/common');
 // Dữ liệu trò chơi
 const wordGames = {};
 
+// Định nghĩa trạng thái phòng
+const ROOM_STATE = {
+    WAITING: 'waiting',
+    PLAYING: 'playing'
+};
+
 /**
  * Khởi tạo các event handler Socket.IO cho game nối từ
  */
@@ -32,7 +38,9 @@ function initWordGameHandlers(io, socket) {
             wordChain: [],
             timer: null,
             remainingPlayers: [], // Mảng lưu ID người chơi chưa được chọn trong vòng hiện tại
-            reports: {} // Đối tượng lưu các báo cáo
+            reports: {}, // Đối tượng lưu các báo cáo
+            chatMessages: [], // Lưu trữ tin nhắn chat trong phòng
+            state: ROOM_STATE.WAITING // Trạng thái phòng mặc định là đang chờ
         };
 
         // Thêm người chơi vào phòng socket
@@ -64,13 +72,10 @@ function initWordGameHandlers(io, socket) {
         }
 
         // Kiểm tra xem trò chơi đã bắt đầu chưa
-        if (wordGames[gameId].gameStarted) {
-            socket.emit('error', { message: 'Trò chơi đã bắt đầu' });
-            return;
-        }
-
+        const game = wordGames[gameId];
+        
         // Thêm người chơi vào phòng
-        wordGames[gameId].players.push({
+        game.players.push({
             id: playerId,
             name: playerName
         });
@@ -86,13 +91,20 @@ function initWordGameHandlers(io, socket) {
                 name: playerName
             },
             isHost: false,
-            gameInfo: wordGames[gameId]
+            gameInfo: game
         });
 
         // Thông báo cho tất cả người chơi trong phòng về người chơi mới
         io.to(gameId).emit('word-player-joined', {
-            players: wordGames[gameId].players
+            players: game.players
         });
+
+        // Gửi lịch sử chat cho người mới tham gia
+        if (game.chatMessages.length > 0) {
+            socket.emit('word-chat-history', {
+                messages: game.chatMessages
+            });
+        }
 
         console.log(`Người chơi ${playerName} đã tham gia phòng nối từ ${gameId}`);
     });
@@ -107,6 +119,7 @@ function initWordGameHandlers(io, socket) {
 
         const game = wordGames[gameId];
         game.gameStarted = true;
+        game.state = ROOM_STATE.PLAYING;
         
         // Khởi tạo mảng remainingPlayers với tất cả người chơi
         game.remainingPlayers = game.players.map(player => player.id);
@@ -140,9 +153,56 @@ function initWordGameHandlers(io, socket) {
         }, 500); // Chờ 500ms để đảm bảo client đã xử lý xong sự kiện word-game-started
     });
     
+    // Xử lý tin nhắn chat trong phòng nối từ
+    socket.on('word-chat-message', (data) => {
+        const { gameId, message } = data;
+        
+        console.log(`[CHAT] Nhận tin nhắn từ socket ${socket.id} trong phòng ${gameId}: "${message}"`);
+        
+        if (!wordGames[gameId]) {
+            console.error(`[CHAT] Không tìm thấy phòng ${gameId}`);
+            return;
+        }
+        
+        const game = wordGames[gameId];
+        
+        // Tìm người chơi gửi tin nhắn
+        const player = game.players.find(p => p.id === socket.id);
+        if (!player) {
+            console.error(`[CHAT] Không tìm thấy người chơi với socket ${socket.id} trong phòng ${gameId}`);
+            return;
+        }
+        
+        console.log(`[CHAT] Tin nhắn từ ${player.name} trong phòng ${gameId}: "${message}"`);
+        
+        // Tạo đối tượng tin nhắn
+        const chatMessage = {
+            senderId: player.id,
+            senderName: player.name,
+            message: message,
+            timestamp: new Date().toISOString(),
+            roomState: game.state, // Thêm trạng thái phòng vào tin nhắn
+            type: 'chat' // Đánh dấu rõ đây là tin nhắn chat
+        };
+        
+        // Lưu tin nhắn vào lịch sử
+        game.chatMessages.push(chatMessage);
+        
+        // Giới hạn số lượng tin nhắn lưu trữ (giữ 100 tin nhắn gần nhất)
+        if (game.chatMessages.length > 100) {
+            game.chatMessages.shift();
+        }
+        
+        // Gửi tin nhắn đến tất cả người chơi trong phòng
+        console.log(`[CHAT] Phát tin nhắn đến tất cả người chơi trong phòng ${gameId}`);
+        io.to(gameId).emit('word-chat-message', chatMessage);
+    });
+    
     // Xử lý khi người chơi gửi từ
     socket.on('submit-word', (data) => {
         const { gameId, word } = data;
+        
+        console.log(`Nhận từ mới từ ${socket.id} trong phòng ${gameId}: "${word}"`);
         
         if (!wordGames[gameId]) {
             socket.emit('error', { message: 'Phòng không tồn tại' });
@@ -209,7 +269,8 @@ function initWordGameHandlers(io, socket) {
             word: word,
             playerId: player.id,
             playerName: player.name,
-            isLastWord: true
+            isLastWord: true,
+            type: 'game-word' // Đánh dấu rõ đây là từ trong game, không phải chat
         });
         
         // Chọn người chơi tiếp theo ngẫu nhiên
@@ -519,8 +580,9 @@ function endWordGame(gameId, loserName, io) {
         wordChain: game.wordChain
     });
     
-    // Đặt trạng thái game về chưa bắt đầu
+    // Đặt trạng thái game về chưa bắt đầu và phòng về trạng thái chờ
     game.gameStarted = false;
+    game.state = ROOM_STATE.WAITING;
     game.wordChain = [];
     game.currentPlayerIndex = 0;
     game.remainingPlayers = [];

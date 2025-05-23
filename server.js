@@ -24,6 +24,16 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 io.on('connection', (socket) => {
     console.log('Người dùng đã kết nối:', socket.id);
 
+    // Debug: Log tất cả các event mà socket nhận được
+    const originalOn = socket.on;
+    socket.on = function(event, handler) {
+        const wrappedHandler = function(...args) {
+            console.log(`Socket ${socket.id} nhận event '${event}'`, args);
+            return handler.apply(this, args);
+        };
+        return originalOn.call(this, event, wrappedHandler);
+    };
+
     // Khởi tạo các event handler cho từng loại game
     initNumberGameHandlers(io, socket);
     initWordGameHandlers(io, socket);

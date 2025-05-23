@@ -175,14 +175,26 @@
         <!-- Phòng chờ online game nối từ -->
         <div id="word-online-waiting" class="section hidden">
             <h2>Phòng chờ nối từ</h2>
-            <div id="word-room-info">
-                <div id="word-room-id-display"></div>
-            </div>
-            <div class="waiting-message">Đang chờ người chơi tham gia...</div>
-            <div id="word-online-players-list"></div>
-            <div class="button-group">
-                <button id="word-start-online-game" class="hidden">Bắt đầu</button>
-                <button id="word-leave-room" class="secondary-btn">Rời phòng</button>
+            <div class="waiting-room-container">
+                <div class="waiting-room-info">
+                    <div id="word-room-info">
+                        <div id="word-room-id-display"></div>
+                    </div>
+                    <div class="waiting-message">Đang chờ người chơi tham gia...</div>
+                    <div id="word-online-players-list"></div>
+                    <div class="button-group">
+                        <button id="word-start-online-game" class="hidden">Bắt đầu</button>
+                        <button id="word-leave-room" class="secondary-btn">Rời phòng</button>
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-header">Trò chuyện phòng chờ</div>
+                    <div class="chat-messages" id="word-waiting-chat-messages"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="word-waiting-chat-input" placeholder="Nhập tin nhắn...">
+                        <button id="word-waiting-chat-send">Gửi</button>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -223,10 +235,10 @@
                         <button id="word-submit-btn">Gửi</button>
                     </div>
                     <div id="word-score-board"></div>
-                    <div class="fee-notice">⚠️ Lưu ý: Người thua sẽ bị phạt 5.000đ cho mỗi ván thua ⚠️</div>
+                    <!-- <div class="fee-notice">⚠️ Lưu ý: Người thua sẽ bị phạt 5.000đ cho mỗi ván thua ⚠️</div> -->
                 </div>
                 <div class="chat-container">
-                    <div class="chat-header">Trò chuyện</div>
+                    <div class="chat-header">Trò chuyện trong game</div>
                     <div class="chat-messages" id="word-chat-messages"></div>
                     <div class="chat-input-area">
                         <input type="text" id="word-chat-input" placeholder="Nhập tin nhắn...">
@@ -252,7 +264,7 @@
             <h2>Kết quả nối từ</h2>
             <div id="word-loser"></div>
             <div id="word-chain-result"></div>
-            <div class="fee-notice">⚠️ Lưu ý: Người thua cần thanh toán 5.000đ tiền phạt ⚠️</div>
+            <!-- <div class="fee-notice">⚠️ Lưu ý: Người thua cần thanh toán 5.000đ tiền phạt ⚠️</div> -->
             <div class="button-group">
                 <button id="word-play-again">Chơi Lại</button>
                 <button id="word-back-to-menu-from-results" class="secondary-btn">Về Menu</button>

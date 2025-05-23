@@ -14,6 +14,7 @@ const CHAT_ROOM_STATE = {
 };
 let chatRoomState = '';
 let DEBUG_CHAT = true; // Biến debug cho chat
+let chatIsOnline = false; // Biến theo dõi trạng thái online của chat
 
 /**
  * Khởi tạo module chat
@@ -114,8 +115,13 @@ function sendChatMessage(inputElement, messagesId, gameType) {
         players.find(p => p.id === myPlayerId)?.name || 'Bạn' : 
         'Bạn';
     
+    // Đồng bộ trạng thái online từ biến chung
+    if (typeof isOnlineMode !== 'undefined') {
+        chatIsOnline = isOnlineMode;
+    }
+    
     // Kiểm tra kết nối socket
-    if (chatSocket && isOnlineMode) {
+    if (chatSocket && chatIsOnline) {
         // Tạo event phù hợp dựa vào gameType
         let eventName = 'chat-message';
         if (gameType.includes('word')) {

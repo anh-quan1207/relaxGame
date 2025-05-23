@@ -53,7 +53,7 @@ let numberGameIsStarted = false;
 let numberGameMode = 'local'; // local hoặc online
 let numberGameCountInGame = 100; // Số lượng số mặc định
 let gameOver = false;
-let isOnlineMode = false;
+let numberGameIsOnline = false; // Đổi tên biến để tránh xung đột
 
 /**
  * Khởi tạo các event handler cho Game Tìm Số
@@ -204,7 +204,7 @@ function initNumberGame() {
 
     // Chơi lại
     playAgainButton.addEventListener('click', () => {
-        if (isOnlineMode) {
+        if (numberGameIsOnline) {
             // Quay lại menu chính nếu đang ở chế độ online
             showSection(mainMenu);
             hideSection(resultsSection);
@@ -338,7 +338,7 @@ function updatePlayersList(data) {
  * Xử lý khi game bắt đầu
  */
 function handleGameStarted(data) {
-    isOnlineMode = true;
+    numberGameIsOnline = true;
     showSection(gameSection);
     hideSection(onlineWaitingSection);
     
@@ -463,7 +463,7 @@ function createNumberBoxesFromServer(numberPositions) {
         
         // Event listener
         numberBox.addEventListener('click', () => {
-            if (isOnlineMode) {
+            if (numberGameIsOnline) {
                 handleOnlineNumberClick(numberBox, item.number);
             } else {
                 handleNumberClick(numberBox, item.number);
@@ -553,7 +553,7 @@ function handlePlayerLeft(data) {
     
     updatePlayersList({ players: numberGamePlayers });
     
-    if (isOnlineMode) {
+    if (numberGameIsOnline) {
         updateScoreBoard();
         updateGameInfo();
     }
@@ -620,7 +620,7 @@ function updatePlayerInputs() {
  * Bắt đầu game offline
  */
 function startGame() {
-    isOnlineMode = false;
+    numberGameIsOnline = false;
     
     // Thu thập thông tin người chơi
     numberGamePlayers = [];
@@ -863,7 +863,7 @@ function moveToNextPlayer() {
  * Cập nhật thông tin người chơi và số cần tìm
  */
 function updateGameInfo() {
-    if (isOnlineMode) {
+    if (numberGameIsOnline) {
         // Trong chế độ online, chỉ hiển thị số cần tìm tiếp theo
         currentPlayerDisplay.textContent = `Mọi người cùng tìm số!`;
     } else {
@@ -884,18 +884,18 @@ function updateScoreBoard() {
         playerScore.className = 'player-score';
         
         // Trong chế độ online, không đánh dấu người chơi hiện tại
-        if (!isOnlineMode && index === numberGameCurrentPlayerIndex) {
+        if (!numberGameIsOnline && index === numberGameCurrentPlayerIndex) {
             playerScore.classList.add('active');
         }
         
         // Đánh dấu nếu là người chơi hiện tại (bạn)
-        if (isOnlineMode && player.id === myPlayerId) {
+        if (numberGameIsOnline && player.id === myPlayerId) {
             playerScore.classList.add('you');
         }
         
         const playerName = document.createElement('div');
         playerName.className = 'player-name';
-        playerName.textContent = player.name + (isOnlineMode && player.id === myPlayerId ? ' (Bạn)' : '');
+        playerName.textContent = player.name + (numberGameIsOnline && player.id === myPlayerId ? ' (Bạn)' : '');
         
         const score = document.createElement('div');
         score.className = 'score';
